@@ -44,6 +44,9 @@ const scorecardTranslationFr = createTranslationMessages({
       'Erreur lors de la récupération des scorecards : {{error}}',
     'errors.metricDataUnavailable': 'Données de métrique indisponibles',
     'errors.invalidThresholds': 'Seuils invalides',
+    'errors.missingPermission': 'Permission manquante',
+    'errors.missingPermissionMessage':
+      'Pour voir les métriques de scorecard, votre administrateur doit vous donner la permission requise.',
 
     // Metric translations
     'metric.github.open_prs.title': 'GitHub PRs ouvertes',
@@ -57,6 +60,9 @@ const scorecardTranslationFr = createTranslationMessages({
     'thresholds.success': 'Succès',
     'thresholds.warning': 'Avertissement',
     'thresholds.error': 'Erreur',
+    'thresholds.noEntities': "Aucune entité dans l'état {{category}}",
+    'thresholds.entities_one': '{{count}} entité',
+    'thresholds.entities_other': '{{count}} entités',
   },
 });
 
