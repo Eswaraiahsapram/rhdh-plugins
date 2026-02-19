@@ -140,12 +140,27 @@ test.describe('Scorecard Plugin Tests', () => {
       );
       expect(isGithubVisible).toBe(true);
 
-      const errorLocator = page.getByText(
+      const githubCard = page
+        .locator('[role="article"]')
+        .filter({ hasText: githubMetric.title })
+        .first();
+      const errorLocator = githubCard.getByText(
         translations.errors.metricDataUnavailable,
       );
       await expect(errorLocator).toBeVisible();
-      await scorecardPage.validateScorecardAriaFor(jiraMetric);
 
+      await errorLocator.hover();
+      const errorMetric = unavailableMetricResponse.find(
+        metric => metric.id === 'github.open_prs',
+      );
+
+      if (errorMetric && 'error' in errorMetric) {
+        const errorTooltip = errorMetric.error;
+        expect(errorTooltip).toBeTruthy();
+        await expect(page.getByText(errorTooltip!)).toBeVisible();
+      }
+
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
       await runAccessibilityTests(page, testInfo);
     });
 
@@ -171,12 +186,26 @@ test.describe('Scorecard Plugin Tests', () => {
       );
       expect(isJiraVisible).toBe(true);
 
-      const errorLocator = page.getByText(
+      const githubCard = page
+        .locator('[role="article"]')
+        .filter({ hasText: githubMetric.title })
+        .first();
+      const errorLocator = githubCard.getByText(
         translations.errors.invalidThresholds,
       );
       await expect(errorLocator).toBeVisible();
-      await scorecardPage.validateScorecardAriaFor(jiraMetric);
 
+      await errorLocator.hover();
+      const errorTooltip = invalidThresholdResponse.find(
+        metric => metric.id === 'github.open_prs',
+      )?.result?.thresholdResult;
+
+      if (errorTooltip && 'error' in errorTooltip) {
+        expect(errorTooltip.error).toBeTruthy();
+        await expect(page.getByText(errorTooltip.error)).toBeVisible();
+      }
+
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
       await runAccessibilityTests(page, testInfo);
     });
   });
@@ -205,6 +234,26 @@ test.describe('Scorecard Plugin Tests', () => {
 
       await homePage.expectCardHasMissingPermission('github.open_prs');
       await homePage.expectCardHasMissingPermission('jira.open_issues');
+
+      const githubCard = homePage.getCard('github.open_prs');
+      const githubMissingPermissionLabel = githubCard.getByText(
+        translations.errors.missingPermission,
+      );
+      await expect(githubMissingPermissionLabel).toBeVisible();
+      await githubMissingPermissionLabel.hover();
+      await expect(
+        page.getByText(translations.errors.missingPermissionMessage),
+      ).toBeVisible();
+
+      const jiraCard = homePage.getCard('jira.open_issues');
+      const jiraMissingPermissionLabel = jiraCard.getByText(
+        translations.errors.missingPermission,
+      );
+      await expect(jiraMissingPermissionLabel).toBeVisible();
+      await jiraMissingPermissionLabel.hover();
+      await expect(
+        page.getByText(translations.errors.missingPermissionMessage),
+      ).toBeVisible();
     });
 
     test('Manage scorecards on Home page', async () => {
