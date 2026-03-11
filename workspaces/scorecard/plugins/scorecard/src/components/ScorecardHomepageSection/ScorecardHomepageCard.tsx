@@ -23,7 +23,15 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ErrorStatePanel } from './ErrorStatePanel';
 import { EmptyStatePanel } from './EmptyStatePanel';
 
-export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
+export const ScorecardHomepageCard = ({
+  metricId,
+  showSubheader = true,
+  showInfo = true,
+}: {
+  metricId: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
+}) => {
   const { t } = useTranslation();
 
   const { aggregatedScorecard, loadingData, error } = useAggregatedScorecard({
@@ -80,6 +88,8 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
       cardTitle={finalTitle}
       description={finalDescription}
       scorecard={aggregatedScorecard}
+      showSubheader={showSubheader}
+      showInfo={showInfo}
     />
   );
 };
