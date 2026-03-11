@@ -44,7 +44,7 @@ export const EntitiesTable = ({
   setMetricTitle,
 }: EntitiesTableProps) => {
   const [page, setPage] = useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(3);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
   const { t } = useTranslation();
 
   const [sortState, setSortState] = useState<{
@@ -71,8 +71,6 @@ export const EntitiesTable = ({
     orderBy,
     order,
   });
-
-  // const isMissingPermission = entitiesError?.message?.includes('NotAllowedError');
 
   useEffect(() => {
     setMetricTitle(aggregatedScorecardEntities?.metricMetadata?.title ?? '');
@@ -112,7 +110,7 @@ export const EntitiesTable = ({
       : t('entitiesPage.entitiesTable.title');
 
   return (
-    <EntitiesTableWrapper title={entitiesTableTitle}>
+    <EntitiesTableWrapper title={entitiesTableTitle} isError={!!entitiesError}>
       <Table sx={{ width: '100%' }}>
         <EntitiesTableHeader
           orderBy={orderBy}

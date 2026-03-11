@@ -23,6 +23,7 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 
 import { ScorecardHomepageCard } from '../ScorecardHomepageSection/ScorecardHomepageCard';
+import { useTranslation } from '../../hooks/useTranslation';
 
 import { EntitiesPageHeader } from './EntitiesPageHeader';
 import { EntitiesTable } from './EntitiesTable/EntitiesTable';
@@ -32,15 +33,29 @@ export const ScorecardEntitiesPage = () => {
 
   const [metricTitle, setMetricTitle] = useState<string>('');
 
+  const { t } = useTranslation();
+
   return (
     <Page themeId="home">
       <EntitiesPageHeader
-        title={metricTitle ? metricTitle : metricId || 'Unknown metric'}
+        title={
+          metricTitle
+            ? metricTitle
+            : metricId || t('entitiesPage.unknownMetric')
+        }
       />
       <Divider />
       <Content>
-        <Box sx={{ display: 'flex' }}>
-          <Box sx={{ py: 2, width: '67%', mr: 1.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+            gap: 3,
+            py: 2,
+          }}
+        >
+          <Box sx={{ flex: { xs: '1 1 100%', lg: '1 1 0%' }, minWidth: 0 }}>
             <EntitiesTable
               metricId={metricId}
               setMetricTitle={setMetricTitle}
@@ -48,29 +63,28 @@ export const ScorecardEntitiesPage = () => {
           </Box>
           <Box
             sx={{
-              py: 2,
-              width: '33%',
-              ml: 1.5,
-              maxHeight: 480,
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Box
-              sx={{
-                flex: 1,
-                minHeight: 0,
+              flex: { xs: '1 1 100%', lg: '0 0 33%' },
+              minWidth: 0,
+              alignSelf: 'flex-start',
+              height: { xs: 320, sm: 380 },
+              '& > *': { height: '100%' },
+              '& > div[class*="MuiCard-root"]': {
+                height: '100%',
+                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                '& > *': { flex: 1, minHeight: 0 },
-              }}
-            >
-              <ScorecardHomepageCard
-                metricId={metricId as string}
-                showSubheader={false}
-                showInfo={false}
-              />
-            </Box>
+              },
+              '& div[class*="MuiCardContent-root"]': {
+                flex: 1,
+                minHeight: 0,
+              },
+            }}
+          >
+            <ScorecardHomepageCard
+              metricId={metricId as string}
+              showSubheader={false}
+              showInfo={false}
+            />
           </Box>
         </Box>
       </Content>

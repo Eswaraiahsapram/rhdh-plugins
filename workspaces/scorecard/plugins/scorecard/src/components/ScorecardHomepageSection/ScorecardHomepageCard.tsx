@@ -52,7 +52,13 @@ export const ScorecardHomepageCard = ({
   }
 
   if (error) {
-    return <ErrorStatePanel error={error} metricId={metricId} />;
+    return (
+      <ErrorStatePanel
+        error={error}
+        metricId={metricId}
+        showSubheader={showSubheader}
+      />
+    );
   }
 
   if (!aggregatedScorecard) {
@@ -62,6 +68,7 @@ export const ScorecardHomepageCard = ({
   if (aggregatedScorecard.result?.total === 0) {
     return (
       <EmptyStatePanel
+        showSubheader={showSubheader}
         metricId={metricId}
         label={t('errors.noDataFound')}
         tooltipContent={t('errors.noDataFoundMessage')}

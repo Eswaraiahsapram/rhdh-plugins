@@ -24,6 +24,8 @@ import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
+import { useTranslation } from '../../../hooks/useTranslation';
+
 export interface EntitiesTablePaginationProps {
   count: number;
   page: number;
@@ -37,6 +39,8 @@ export interface EntitiesTablePaginationProps {
 export const EntitiesTablePagination = (props: any) => {
   const theme = useTheme();
   const { count, page, rowsPerPage, onPageChange } = props;
+
+  const { t } = useTranslation();
 
   const handleFirstPageButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
     onPageChange(event, 1);
@@ -74,7 +78,8 @@ export const EntitiesTablePagination = (props: any) => {
         )}
       </IconButton>
       {count === 0 ? 0 : (page - 1) * rowsPerPage + 1}-
-      {Math.min(page * rowsPerPage, count)} of {count}
+      {Math.min(page * rowsPerPage, count)}{' '}
+      {t('entitiesPage.entitiesTableFooter.of')} {count}
       <IconButton
         onClick={handleNextPageButtonClick}
         disabled={page >= Math.ceil(count / rowsPerPage)}

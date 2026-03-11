@@ -28,13 +28,14 @@ const generateRowsPerPageOptions = (
   totalCount: number,
   t: (key: string, params?: any) => string,
 ) => {
-  const defaultOptions = [3, 5, 10, 20];
+  const defaultOptions = [5, 10, 20];
+
   const maxDefaultOption = Math.max(...defaultOptions);
 
   if (defaultOptions.includes(totalCount)) {
     const validOptions = defaultOptions.filter(option => option <= totalCount);
     return validOptions.map(value => ({
-      label: t('entitiesPage.entitiesTableFooter.rows_other' as any, {
+      label: t('entitiesPage.entitiesTableFooter.rows_other', {
         count: value.toString(),
       }),
       value,
@@ -45,7 +46,7 @@ const generateRowsPerPageOptions = (
 
   if (validDefaults.length > 0 && totalCount <= maxDefaultOption) {
     const options = validDefaults.map(value => ({
-      label: t('entitiesPage.entitiesTableFooter.rows_other' as any, {
+      label: t('entitiesPage.entitiesTableFooter.rows_other', {
         count: value.toString(),
       }),
       value,
@@ -59,7 +60,7 @@ const generateRowsPerPageOptions = (
 
   if (validDefaults.length > 0) {
     return validDefaults.map(value => ({
-      label: t('entitiesPage.entitiesTableFooter.rows_other' as any, {
+      label: t('entitiesPage.entitiesTableFooter.rows_other', {
         count: value.toString(),
       }),
       value,

@@ -27,11 +27,13 @@ import { useTranslation } from '../../../hooks/useTranslation';
 interface EntitiesTableWrapperProps {
   children: ReactNode;
   title: string;
+  isError?: boolean;
 }
 
 export const EntitiesTableWrapper: FC<EntitiesTableWrapperProps> = ({
   children,
   title,
+  isError,
 }) => {
   const { t } = useTranslation();
 
@@ -54,17 +56,19 @@ export const EntitiesTableWrapper: FC<EntitiesTableWrapperProps> = ({
           }}
         >
           {title}
-          <Tooltip
-            title={t('metric.someEntitiesNotReportingValues')}
-            arrow
-            placement="right"
-            sx={{
-              ml: 0.5,
-              cursor: 'pointer',
-            }}
-          >
-            <ReportProblemOutlinedIcon color="warning" fontSize="small" />
-          </Tooltip>
+          {!isError && (
+            <Tooltip
+              title={t('metric.someEntitiesNotReportingValues')}
+              arrow
+              placement="right"
+              sx={{
+                ml: 0.5,
+                cursor: 'pointer',
+              }}
+            >
+              <ReportProblemOutlinedIcon color="warning" fontSize="small" />
+            </Tooltip>
+          )}
         </Typography>
       </Box>
       <Box sx={{ pl: 3, pr: 3 }}>{children}</Box>
