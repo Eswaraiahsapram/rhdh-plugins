@@ -83,6 +83,7 @@ const scorecardTranslationJa = createTranslationMessages({
     'thresholds.entities_other': '{{count}} エンティティー',
 
     // Entities page translations
+    'entitiesPage.unknownMetric': '不明なメトリクス',
     'entitiesPage.noDataFound':
       'ここでデータを確認するには、エンティティがこの指標に関連する値を報告していることを確認してください。',
     'entitiesPage.missingPermission':

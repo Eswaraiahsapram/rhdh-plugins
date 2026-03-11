@@ -91,6 +91,7 @@ export const scorecardMessages = {
 
   // Entities page translations
   entitiesPage: {
+    unknownMetric: 'Unknown metric',
     noDataFound:
       'To see your data here, check that your entities are reporting values related to this metric.',
     missingPermission:
