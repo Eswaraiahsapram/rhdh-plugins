@@ -190,7 +190,7 @@ describe('EntitiesTable', () => {
     expect(screen.getByTestId('wrapper-title')).toHaveTextContent('Entities');
   });
 
-  it('should render EntitiesTableStateRow with loading when loadingDataEntities is true', () => {
+  it('should render loading spinner when loadingDataEntities is true', () => {
     mockUseAggregatedScorecardEntities.mockReturnValue({
       aggregatedScorecardEntities: undefined,
       loadingData: true,
@@ -203,8 +203,7 @@ describe('EntitiesTable', () => {
       </TestWrapper>,
     );
 
-    const stateRow = screen.getByTestId('entities-table-state-row');
-    expect(stateRow).toHaveAttribute('data-loading', 'true');
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
   it('should render EntitiesTableStateRow with error when entitiesError is set', () => {
@@ -278,7 +277,7 @@ describe('EntitiesTable', () => {
       expect.objectContaining({
         metricId: 'jira.blocking_tickets',
         page: 1,
-        pageSize: 3,
+        pageSize: 5,
         ownershipEntityRefs: [],
         orderBy: null,
         order: 'asc',

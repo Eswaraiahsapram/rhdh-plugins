@@ -35,13 +35,15 @@ export const ScorecardEntitiesPage = () => {
 
   const { t } = useTranslation();
 
+  const titleKey = `metric.${metricId}.title`;
+  const title = t(titleKey as any, {});
+  const finalTitle = title === titleKey ? metricTitle : title;
+
   return (
     <Page themeId="home">
       <EntitiesPageHeader
         title={
-          metricTitle
-            ? metricTitle
-            : metricId || t('entitiesPage.unknownMetric')
+          finalTitle ? finalTitle : metricId || t('entitiesPage.unknownMetric')
         }
       />
       <Divider />

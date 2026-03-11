@@ -24,6 +24,15 @@ jest.mock('react-router-dom', () => ({
   useParams: () => mockUseParams(),
 }));
 
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      if (key === 'entitiesPage.unknownMetric') return 'Unknown metric';
+      return key;
+    },
+  }),
+}));
+
 jest.mock('@backstage/core-components', () => ({
   Page: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="page">{children}</div>
