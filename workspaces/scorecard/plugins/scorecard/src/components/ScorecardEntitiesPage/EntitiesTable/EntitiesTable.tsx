@@ -21,6 +21,7 @@ import TableBody from '@mui/material/TableBody';
 import TableFooter from '@mui/material/TableFooter';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { useOwnershipEntityRefs } from '../../../hooks/useOwnershipEntityRefs';
 import { useAggregatedScorecardEntities } from '../../../hooks/useAggregatedScorecardEntities';
@@ -120,10 +121,14 @@ export const EntitiesTable = ({
 
         <TableBody>
           {loadingDataEntities && (
-            <EntitiesTableStateRow
-              colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
-              loading={loadingDataEntities}
-            />
+            <TableRow key="entities-table-loading-row">
+              <TableCell
+                colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
+                align="center"
+              >
+                <CircularProgress />
+              </TableCell>
+            </TableRow>
           )}
 
           {!loadingDataEntities && entitiesError && (

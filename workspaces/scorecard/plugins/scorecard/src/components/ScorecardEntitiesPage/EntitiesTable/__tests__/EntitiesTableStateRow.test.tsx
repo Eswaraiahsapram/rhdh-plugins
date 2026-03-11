@@ -70,22 +70,11 @@ describe('EntitiesTableStateRow', () => {
     });
   });
 
-  it('should render CircularProgress when loading', () => {
-    render(
-      <TestWrapper>
-        <EntitiesTableStateRow colSpan={6} loading />
-      </TestWrapper>,
-    );
-
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
-  });
-
   it('should render missing permission text when error contains NotAllowedError', () => {
     render(
       <TestWrapper>
         <EntitiesTableStateRow
           colSpan={6}
-          loading={false}
           error={new Error('NotAllowedError: missing permission')}
         />
       </TestWrapper>,
@@ -97,7 +86,7 @@ describe('EntitiesTableStateRow', () => {
   it('should render no data found when noEntities is true and no error', () => {
     render(
       <TestWrapper>
-        <EntitiesTableStateRow colSpan={6} loading={false} noEntities />
+        <EntitiesTableStateRow colSpan={6} noEntities />
       </TestWrapper>,
     );
 
@@ -109,7 +98,6 @@ describe('EntitiesTableStateRow', () => {
       <TestWrapper>
         <EntitiesTableStateRow
           colSpan={6}
-          loading={false}
           error={new Error('NotFoundError: Metric not found')}
           metricId="unknown.metric"
         />
@@ -148,7 +136,7 @@ describe('EntitiesTableStateRow', () => {
   it('should render single cell with colSpan', () => {
     const { container } = render(
       <TestWrapper>
-        <EntitiesTableStateRow colSpan={6} loading={false} />
+        <EntitiesTableStateRow colSpan={6} />
       </TestWrapper>,
     );
 

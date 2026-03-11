@@ -18,7 +18,6 @@ import { useEffect } from 'react';
 
 import { WarningPanel } from '@backstage/core-components';
 
-import CircularProgress from '@mui/material/CircularProgress';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 
@@ -28,7 +27,6 @@ import { useTranslation } from '../../../hooks/useTranslation';
 
 interface EntitiesTableStateRowProps {
   colSpan: number;
-  loading?: boolean;
   error?: Error;
   metricId?: string;
   noEntities?: boolean;
@@ -37,7 +35,6 @@ interface EntitiesTableStateRowProps {
 
 export const EntitiesTableStateRow = ({
   colSpan,
-  loading,
   error,
   metricId,
   setMetricTitle,
@@ -79,7 +76,7 @@ export const EntitiesTableStateRow = ({
   return (
     <TableRow key="entities-table-state-row">
       <TableCell colSpan={colSpan} align="center">
-        {loading ? <CircularProgress /> : content}
+        {content}
       </TableCell>
     </TableRow>
   );
