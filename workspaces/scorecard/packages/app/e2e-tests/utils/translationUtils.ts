@@ -25,6 +25,13 @@ import scorecardTranslationJa from '../../../../plugins/scorecard/src/translatio
 
 export type ScorecardMessages = typeof scorecardMessages;
 
+/** English (ref) metric title – matches API metadata.title used when i18n falls back. */
+export function getMetricTitleEn(
+  metricId: 'jira.open_issues' | 'github.open_prs',
+): string {
+  return scorecardMessages.metric[metricId].title;
+}
+
 function transform(messages: typeof scorecardTranslationDe.messages) {
   const result = Object.keys(messages).reduce((res, key) => {
     // Special handling for metric keys: metric.github.open_prs.title -> metric['github.open_prs'].title
@@ -103,6 +110,30 @@ export function getEntityCount(
   return evaluateMessage(key, count);
 }
 
+/** Returns the translated label for "entities" (e.g. "entities", "entités", "Elemente"). */
+export function getEntitiesLabel(translations: ScorecardMessages): string {
+  const template =
+    translations.thresholds.entities_other ?? '{{count}} entities';
+  return template.replace(/\{\{count\}\}\s*/, '').trim();
+}
+
+/** Entities table column header labels for the drill-down page (locale-aware). */
+export function getEntitiesTableHeaderLabels(translations: ScorecardMessages) {
+  const header = (
+    translations as {
+      entitiesPage?: { entitiesTable?: { header?: Record<string, string> } };
+    }
+  ).entitiesPage?.entitiesTable?.header;
+  return {
+    metric: header?.metric ?? 'Metric',
+    value: header?.value ?? 'Value',
+    entity: header?.entity ?? 'Entity',
+    owner: header?.owner ?? 'Owner',
+    kind: header?.kind ?? 'Kind',
+    lastUpdated: header?.lastUpdated ?? 'Last updated',
+  };
+}
+
 export function getLastUpdatedLabel(
   translations: ScorecardMessages,
   formattedTimestamp: string,
@@ -139,6 +170,23 @@ export function getThresholdsSnapshot(
           - link:
             - /url: /scorecard/metrics/${metricId}
             - text: ${entityCount}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - paragraph: ${translations.thresholds.success}
+          - paragraph: ${translations.thresholds.warning}
+          - paragraph: ${translations.thresholds.error}
+          - application
+        `;
+}
+
+/** Snapshot for the scorecard card on the drill-down page (same as thresholds but without the entities link). */
+export function getDrillDownCardSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
           - separator
           - paragraph: ${translations.metric[metricId].description}
           - paragraph: ${translations.thresholds.success}

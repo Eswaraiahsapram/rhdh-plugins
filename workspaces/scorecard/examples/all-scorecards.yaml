@@ -21,7 +21,7 @@ metadata:
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins
     backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins
-    jira/project-key: RSPT
+    jira/project-key: RHIDP
     jira/label: JupiterTeam
 spec:
   type: service

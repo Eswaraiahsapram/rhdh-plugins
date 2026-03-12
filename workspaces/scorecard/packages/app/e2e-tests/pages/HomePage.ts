@@ -19,9 +19,14 @@ import {
   ScorecardMessages,
   getEntityCount,
   getLastUpdatedLabel,
+  getMetricTitleEn,
 } from '../utils/translationUtils';
 
 type ThresholdState = 'success' | 'warning' | 'error';
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 export class HomePage {
   readonly page: Page;
@@ -68,9 +73,13 @@ export class HomePage {
   }
 
   getCard(metricId: 'github.open_prs' | 'jira.open_issues'): Locator {
-    return this.page
-      .locator('article')
-      .filter({ hasText: this.translations.metric[metricId].title });
+    const translatedTitle = this.translations.metric[metricId].title;
+    const enTitle = getMetricTitleEn(metricId);
+    const pattern =
+      translatedTitle === enTitle
+        ? translatedTitle
+        : new RegExp(`${escapeRegex(translatedTitle)}|${escapeRegex(enTitle)}`);
+    return this.page.locator('article').filter({ hasText: pattern });
   }
 
   async verifyThresholdTooltip(

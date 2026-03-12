@@ -75,3 +75,78 @@ export async function mockAggregatedScorecardResponse(
     });
   });
 }
+
+const entitiesDrillDownPattern = (metricId: string) =>
+  `**/api/scorecard/metrics/${metricId}/catalog/aggregations/entities*`;
+
+/**
+ * Mocks the aggregated scorecard entity drill-down API:
+ * GET /api/scorecard/metrics/{metricId}/catalog/aggregations/entities?page=1&pageSize=5
+ */
+export async function mockScorecardEntitiesDrillDown(
+  page: Page,
+  responseData: object,
+  metricId: 'github.open_prs' | 'jira.open_issues' = 'github.open_prs',
+  status = 200,
+) {
+  await page.route(entitiesDrillDownPattern(metricId), async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(responseData),
+    });
+  });
+}
+
+const STATUS_ORDER_ASC = ['error', 'success', 'warning'];
+
+interface EntitiesDrillDownPayload {
+  entities?: Array<{ status?: string }>;
+  [key: string]: unknown;
+}
+
+function sortEntitiesByStatus(
+  data: EntitiesDrillDownPayload,
+  sortOrder: 'asc' | 'desc',
+): EntitiesDrillDownPayload {
+  const entities = data.entities ? [...data.entities] : [];
+  const order =
+    sortOrder === 'asc' ? STATUS_ORDER_ASC : [...STATUS_ORDER_ASC].reverse();
+  entities.sort((a, b) => {
+    const aIdx = order.indexOf(a.status ?? '');
+    const bIdx = order.indexOf(b.status ?? '');
+    return aIdx - bIdx;
+  });
+  return { ...data, entities };
+}
+
+/**
+ * Mocks the entities drill-down API and returns entities sorted by status when
+ * sortBy=status and sortOrder are present in the request URL (so sort clicks are reflected in table data).
+ */
+export async function mockScorecardEntitiesDrillDownWithSort(
+  page: Page,
+  responseData: object,
+  metricId: 'github.open_prs' | 'jira.open_issues' = 'github.open_prs',
+  status = 200,
+) {
+  await page.route(entitiesDrillDownPattern(metricId), async route => {
+    const url = new URL(route.request().url());
+    const sortBy = url.searchParams.get('sortBy');
+    const sortOrder = (url.searchParams.get('sortOrder') ?? 'asc') as
+      | 'asc'
+      | 'desc';
+    const data =
+      sortBy === 'status'
+        ? sortEntitiesByStatus(
+            responseData as EntitiesDrillDownPayload,
+            sortOrder,
+          )
+        : responseData;
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(data),
+    });
+  });
+}
