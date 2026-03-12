@@ -20,14 +20,7 @@ import type { Entity } from '@backstage/catalog-model';
 import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
-
-type EntityMetadata = {
-  title?: string;
-  description?: string;
-  kind?: string;
-};
-
-type EntityMetadataMap = Record<string, EntityMetadata>;
+import { EntityMetadata, EntityMetadataMap } from '../components/types';
 
 type RefFilter = {
   kind: string;
