@@ -31,7 +31,7 @@ export const MetricStatusCell = memo(
             flexShrink: 0,
           }}
         />
-        {status ? status : '--'}
+        {status || '--'}
       </Box>
     );
   },
