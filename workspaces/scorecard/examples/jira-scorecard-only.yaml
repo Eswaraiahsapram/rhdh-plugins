@@ -5,7 +5,7 @@ kind: Component
 metadata:
   name: jira-scorecard-only-service
   annotations:
-    jira/project-key: RHIDP
+    jira/project-key: RSPT
 spec:
   type: service
   owner: group:development/guests

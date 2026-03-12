@@ -17,6 +17,7 @@
 import { Locator, Page, expect } from '@playwright/test';
 import {
   ScorecardMessages,
+  getEntitiesLabel,
   getEntityCount,
   getLastUpdatedLabel,
   getMetricTitleEn,
@@ -123,5 +124,9 @@ export class HomePage {
     await expect(infoIcon).toBeVisible();
     await infoIcon.hover();
     await expect(this.page.getByText(label)).toBeVisible();
+  }
+
+  async clickDrillDownLink() {
+    await this.page.getByText(getEntitiesLabel(this.translations)).click();
   }
 }

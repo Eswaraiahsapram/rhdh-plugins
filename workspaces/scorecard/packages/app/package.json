@@ -62,6 +62,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "@backstage/test-utils": "^1.7.13",
     "@playwright/test": "^1.56.1",
     "@testing-library/dom": "^9.0.0",

@@ -24,6 +24,7 @@ import {
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { HomePage } from './pages/HomePage';
+import { ScorecardDrillDownPage } from './pages/ScorecardDrillDownPage';
 import {
   customScorecardResponse,
   emptyScorecardResponse,
@@ -41,9 +42,6 @@ import {
   evaluateMessage,
   getTranslations,
   getEntityCount,
-  getDrillDownCardSnapshot,
-  getEntitiesLabel,
-  getEntitiesTableHeaderLabels,
   getMissingPermissionSnapshot,
   getThresholdsSnapshot,
 } from './utils/translationUtils';
@@ -54,8 +52,10 @@ test.describe('Scorecard Plugin Tests', () => {
   let catalogPage: CatalogPage;
   let scorecardPage: ScorecardPage;
   let homePage: HomePage;
+  let scorecardDrillDownPage: ScorecardDrillDownPage;
   let translations: ScorecardMessages;
   let currentLocale: string;
+  const lastUpdatedFormatted = '24 Jan 2026';
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
@@ -66,6 +66,7 @@ test.describe('Scorecard Plugin Tests', () => {
     catalogPage = new CatalogPage(page);
     scorecardPage = new ScorecardPage(page, translations);
     homePage = new HomePage(page, translations, currentLocale);
+    scorecardDrillDownPage = new ScorecardDrillDownPage(page, translations);
 
     await catalogPage.loginAndSetLocale(currentLocale);
   });
@@ -291,41 +292,6 @@ test.describe('Scorecard Plugin Tests', () => {
       await homePage.expectCardHasNoDataFound('jira.open_issues');
     });
 
-    test('Verify threshold and last updated tooltips', async () => {
-      const lastUpdatedFormatted = '24 Jan 2026';
-
-      await mockAggregatedScorecardResponse(
-        page,
-        githubAggregatedResponse,
-        jiraAggregatedResponse,
-      );
-
-      await homePage.navigateToHome();
-      await page.reload();
-
-      await homePage.enterEditMode();
-      await homePage.clearAllCards();
-      await homePage.addCard('Scorecard: GitHub open PRs');
-      await homePage.saveChanges();
-
-      const githubCard = homePage.getCard('github.open_prs');
-      await homePage.verifyThresholdTooltip(githubCard, 'success', '3', '30%');
-      await homePage.verifyThresholdTooltip(githubCard, 'warning', '5', '50%');
-      await homePage.verifyThresholdTooltip(githubCard, 'error', '2', '20%');
-      await homePage.verifyLastUpdatedTooltip(githubCard, lastUpdatedFormatted);
-
-      await homePage.enterEditMode();
-      await homePage.clearAllCards();
-      await homePage.addCard('Scorecard: Jira open blocking');
-      await homePage.saveChanges();
-
-      const jiraCard = homePage.getCard('jira.open_issues');
-      await homePage.verifyThresholdTooltip(jiraCard, 'success', '6', '60%');
-      await homePage.verifyThresholdTooltip(jiraCard, 'warning', '3', '30%');
-      await homePage.verifyThresholdTooltip(jiraCard, 'error', '1', '10%');
-      await homePage.verifyLastUpdatedTooltip(jiraCard, lastUpdatedFormatted);
-    });
-
     test('GitHub aggregated scorecard drill-down', async () => {
       await mockAggregatedScorecardResponse(
         page,
@@ -344,40 +310,22 @@ test.describe('Scorecard Plugin Tests', () => {
       await homePage.clearAllCards();
       await homePage.addCard('Scorecard: GitHub open PRs');
       await homePage.saveChanges();
-      await page.getByText(getEntitiesLabel(translations)).click();
 
-      await expect(page).toHaveURL(/\/scorecard\/metrics\/github\.open_prs/);
-      await expect(
-        page.getByRole('heading', {
-          name: translations.metric['github.open_prs'].title,
-          level: 1,
-        }),
-      ).toBeVisible();
+      const githubCard = homePage.getCard('github.open_prs');
+      await homePage.verifyThresholdTooltip(githubCard, 'success', '3', '30%');
+      await homePage.verifyThresholdTooltip(githubCard, 'warning', '5', '50%');
+      await homePage.verifyThresholdTooltip(githubCard, 'error', '2', '20%');
+      await homePage.verifyLastUpdatedTooltip(githubCard, lastUpdatedFormatted);
 
-      const githubCard = page
-        .locator('article')
-        .filter({ hasText: translations.metric['github.open_prs'].title });
-      await expect(githubCard).toMatchAriaSnapshot(
-        getDrillDownCardSnapshot(translations, 'github.open_prs'),
+      await homePage.clickDrillDownLink();
+
+      await scorecardDrillDownPage.expectOnPage('github.open_prs');
+      await scorecardDrillDownPage.expectPageTitle('github.open_prs');
+      await scorecardDrillDownPage.expectDrillDownCardSnapshot(
+        'github.open_prs',
       );
-
-      const tableHeaders = getEntitiesTableHeaderLabels(translations);
-      const entitiesTable = page.getByRole('table');
-      const headerNames = [
-        tableHeaders.metric,
-        tableHeaders.value,
-        tableHeaders.entity,
-        tableHeaders.owner,
-        tableHeaders.kind,
-        tableHeaders.lastUpdated,
-      ];
-      for (const name of headerNames) {
-        await expect(
-          entitiesTable.getByRole('columnheader', { name }),
-        ).toBeVisible();
-      }
-
-      const entityNames = [
+      await scorecardDrillDownPage.expectTableHeadersVisible();
+      await scorecardDrillDownPage.expectEntityNamesVisible([
         'all-scorecards-service',
         'Red Hat Developer Hub',
         'github-scorecard-only-service',
@@ -388,25 +336,8 @@ test.describe('Scorecard Plugin Tests', () => {
         'notifications-service',
         'search-indexer',
         'payment-gateway',
-      ];
-      for (const name of entityNames) {
-        await expect(page.getByText(name, { exact: true })).toBeVisible();
-      }
-
-      const metricColumnHeader = entitiesTable.getByRole('columnheader', {
-        name: tableHeaders.metric,
-      });
-      await metricColumnHeader.click();
-      await expect(entitiesTable.getByRole('row').nth(1)).toContainText(
-        'error',
-      );
-      await expect(entitiesTable.getByRole('row').nth(2)).toContainText(
-        'success',
-      );
-      await metricColumnHeader.click();
-      await expect(entitiesTable.getByRole('row').nth(1)).toContainText(
-        'warning',
-      );
+      ]);
+      await scorecardDrillDownPage.verifyMetricColumnSort();
     });
 
     test('Jira aggregated scorecard drill-down', async () => {
@@ -427,63 +358,28 @@ test.describe('Scorecard Plugin Tests', () => {
       await homePage.clearAllCards();
       await homePage.addCard('Scorecard: Jira open blocking');
       await homePage.saveChanges();
-      await page.getByText(getEntitiesLabel(translations)).click();
 
-      await expect(page).toHaveURL(/\/scorecard\/metrics\/jira\.open_issues/);
-      await expect(
-        page.getByRole('heading', {
-          name: translations.metric['jira.open_issues'].title,
-          level: 1,
-        }),
-      ).toBeVisible();
+      const jiraCard = homePage.getCard('jira.open_issues');
+      await homePage.verifyThresholdTooltip(jiraCard, 'success', '6', '60%');
+      await homePage.verifyThresholdTooltip(jiraCard, 'warning', '3', '30%');
+      await homePage.verifyThresholdTooltip(jiraCard, 'error', '1', '10%');
+      await homePage.verifyLastUpdatedTooltip(jiraCard, lastUpdatedFormatted);
 
-      const jiraCard = page
-        .locator('article')
-        .filter({ hasText: translations.metric['jira.open_issues'].title });
-      await expect(jiraCard).toMatchAriaSnapshot(
-        getDrillDownCardSnapshot(translations, 'jira.open_issues'),
+      await homePage.clickDrillDownLink();
+
+      await scorecardDrillDownPage.expectOnPage('jira.open_issues');
+      await scorecardDrillDownPage.expectPageTitle('jira.open_issues');
+      await scorecardDrillDownPage.expectDrillDownCardSnapshot(
+        'jira.open_issues',
       );
-
-      const tableHeaders = getEntitiesTableHeaderLabels(translations);
-      const entitiesTable = page.getByRole('table');
-      const headerNames = [
-        tableHeaders.metric,
-        tableHeaders.value,
-        tableHeaders.entity,
-        tableHeaders.owner,
-        tableHeaders.kind,
-        tableHeaders.lastUpdated,
-      ];
-      for (const name of headerNames) {
-        await expect(
-          entitiesTable.getByRole('columnheader', { name }),
-        ).toBeVisible();
-      }
-
-      const entityNames = [
+      await scorecardDrillDownPage.expectTableHeadersVisible();
+      await scorecardDrillDownPage.expectEntityNamesVisible([
         'platform-api',
         'backend-svc',
         'frontend-svc',
         'auth-svc',
-      ];
-      for (const name of entityNames) {
-        await expect(page.getByText(name, { exact: true })).toBeVisible();
-      }
-
-      const metricColumnHeader = entitiesTable.getByRole('columnheader', {
-        name: tableHeaders.metric,
-      });
-      await metricColumnHeader.click();
-      await expect(entitiesTable.getByRole('row').nth(1)).toContainText(
-        'error',
-      );
-      await expect(entitiesTable.getByRole('row').nth(2)).toContainText(
-        'success',
-      );
-      await metricColumnHeader.click();
-      await expect(entitiesTable.getByRole('row').nth(1)).toContainText(
-        'warning',
-      );
+      ]);
+      await scorecardDrillDownPage.verifyMetricColumnSort();
     });
   });
 });
