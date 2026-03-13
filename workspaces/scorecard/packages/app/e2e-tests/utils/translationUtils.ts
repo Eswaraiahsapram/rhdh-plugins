@@ -25,6 +25,13 @@ import scorecardTranslationJa from '../../../../plugins/scorecard/src/translatio
 
 export type ScorecardMessages = typeof scorecardMessages;
 
+/** English (ref) metric title – matches API metadata.title used when i18n falls back. */
+export function getMetricTitleEn(
+  metricId: 'jira.open_issues' | 'github.open_prs',
+): string {
+  return scorecardMessages.metric[metricId].title;
+}
+
 function transform(messages: typeof scorecardTranslationDe.messages) {
   const result = Object.keys(messages).reduce((res, key) => {
     // Special handling for metric keys: metric.github.open_prs.title -> metric['github.open_prs'].title
@@ -90,6 +97,11 @@ export function evaluateMessage(message: string, value: string) {
   );
 }
 
+/**
+ * Fallbacks in the helpers below are defensive (used only if a key is missing
+ * from the transformed locale object, e.g. unknown locale). All fallbacks use
+ * scorecardMessages (ref) as the single source of truth so they never drift.
+ */
 export function getEntityCount(
   translations: ScorecardMessages,
   locale: string,
@@ -98,9 +110,71 @@ export function getEntityCount(
   const useSingular =
     count === '1' || (locale.startsWith('fr') && count === '0');
   const key = useSingular
-    ? translations.thresholds.entities_one ?? '{{count}} entity'
-    : translations.thresholds.entities_other ?? '{{count}} entities';
+    ? translations.thresholds.entities_one ??
+      scorecardMessages.thresholds.entities_one
+    : translations.thresholds.entities_other ??
+      scorecardMessages.thresholds.entities_other;
   return evaluateMessage(key, count);
+}
+
+/** Returns the translated label for "entities" (e.g. "entities", "entités", "Elemente"). */
+export function getEntitiesLabel(translations: ScorecardMessages): string {
+  const template =
+    translations.thresholds.entities_other ??
+    scorecardMessages.thresholds.entities_other;
+  return template.replace(/\{\{count\}\}\s*/, '').trim();
+}
+
+/** Entities table "no data" message for the drill-down page (locale-aware). */
+export function getEntitiesPageNoDataFound(
+  translations: ScorecardMessages,
+): string {
+  return (
+    (translations as { entitiesPage?: { noDataFound?: string } }).entitiesPage
+      ?.noDataFound ?? scorecardMessages.entitiesPage.noDataFound
+  );
+}
+
+/** Entities table "missing permission" message for the drill-down page (locale-aware). */
+export function getEntitiesPageMissingPermission(
+  translations: ScorecardMessages,
+): string {
+  return (
+    (translations as { entitiesPage?: { missingPermission?: string } })
+      .entitiesPage?.missingPermission ??
+    scorecardMessages.entitiesPage.missingPermission
+  );
+}
+
+/** Tooltip text for "some entities not reporting" icon on drill-down card (locale-aware). */
+export function getSomeEntitiesNotReportingTooltip(
+  translations: ScorecardMessages,
+): string {
+  const metric = (
+    translations as { metric?: { someEntitiesNotReportingValues?: string } }
+  ).metric;
+  return (
+    metric?.someEntitiesNotReportingValues ??
+    scorecardMessages.metric.someEntitiesNotReportingValues
+  );
+}
+
+/** Entities table column header labels for the drill-down page (locale-aware). */
+export function getEntitiesTableHeaderLabels(translations: ScorecardMessages) {
+  const header = (
+    translations as {
+      entitiesPage?: { entitiesTable?: { header?: Record<string, string> } };
+    }
+  ).entitiesPage?.entitiesTable?.header;
+  const h = scorecardMessages.entitiesPage.entitiesTable.header;
+  return {
+    metric: header?.metric ?? h.metric,
+    value: header?.value ?? h.value,
+    entity: header?.entity ?? h.entity,
+    owner: header?.owner ?? h.owner,
+    kind: header?.kind ?? h.kind,
+    lastUpdated: header?.lastUpdated ?? h.lastUpdated,
+  };
 }
 
 export function getLastUpdatedLabel(
@@ -109,7 +183,7 @@ export function getLastUpdatedLabel(
 ) {
   const template =
     (translations.metric as { lastUpdated?: string }).lastUpdated ??
-    'Last updated: {{timestamp}}';
+    scorecardMessages.metric.lastUpdated;
   return evaluateMessage(template, formattedTimestamp);
 }
 
@@ -128,6 +202,36 @@ export function getMissingPermissionSnapshot(
         `;
 }
 
+/** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
+export function getDrillDownMissingPermissionSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - text: "--"
+          - application: ${translations.errors.missingPermission}
+        `;
+}
+
+/** Snapshot for the scorecard card on the drill-down page when there is no data (no entity count in UI). */
+export function getDrillDownNoDataFoundSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - text: "--"
+          - application: ${translations.errors.noDataFound}
+        `;
+}
+
 export function getThresholdsSnapshot(
   translations: ScorecardMessages,
   metricId: 'jira.open_issues' | 'github.open_prs',
@@ -139,6 +243,23 @@ export function getThresholdsSnapshot(
           - link:
             - /url: /scorecard/metrics/${metricId}
             - text: ${entityCount}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - paragraph: ${translations.thresholds.success}
+          - paragraph: ${translations.thresholds.warning}
+          - paragraph: ${translations.thresholds.error}
+          - application
+        `;
+}
+
+/** Snapshot for the scorecard card on the drill-down page (same as thresholds but without the entities link). */
+export function getDrillDownCardSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
           - separator
           - paragraph: ${translations.metric[metricId].description}
           - paragraph: ${translations.thresholds.success}
