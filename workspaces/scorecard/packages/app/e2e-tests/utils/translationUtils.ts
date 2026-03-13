@@ -138,6 +138,19 @@ export function getEntitiesPageMissingPermission(
   );
 }
 
+/** Tooltip text for "some entities not reporting" icon on drill-down card (locale-aware). */
+export function getSomeEntitiesNotReportingTooltip(
+  translations: ScorecardMessages,
+): string {
+  const metric = (
+    translations as { metric?: { someEntitiesNotReportingValues?: string } }
+  ).metric;
+  return (
+    metric?.someEntitiesNotReportingValues ??
+    'Some entities are not reporting values related to this metric.'
+  );
+}
+
 /** Entities table column header labels for the drill-down page (locale-aware). */
 export function getEntitiesTableHeaderLabels(translations: ScorecardMessages) {
   const header = (

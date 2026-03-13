@@ -341,6 +341,7 @@ test.describe('Scorecard Plugin Tests', () => {
         await scorecardDrillDownPage.expectDrillDownCardSnapshot(
           'github.open_prs',
         );
+        await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
         await scorecardDrillDownPage.expectTableHeadersVisible();
         await scorecardDrillDownPage.expectEntityNamesVisible([
           'all-scorecards-service',
@@ -391,6 +392,7 @@ test.describe('Scorecard Plugin Tests', () => {
         await scorecardDrillDownPage.expectDrillDownCardSnapshot(
           'jira.open_issues',
         );
+        await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
         await scorecardDrillDownPage.expectTableHeadersVisible();
         await scorecardDrillDownPage.expectEntityNamesVisible([
           'platform-api',

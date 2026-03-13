@@ -24,6 +24,7 @@ import {
   getEntitiesPageNoDataFound,
   getEntitiesTableHeaderLabels,
   getMetricTitleEn,
+  getSomeEntitiesNotReportingTooltip,
 } from '../utils/translationUtils';
 
 type MetricId = 'github.open_prs' | 'jira.open_issues';
@@ -104,6 +105,15 @@ export class ScorecardDrillDownPage {
   async expectTableNoDataFound() {
     const noDataText = getEntitiesPageNoDataFound(this.translations);
     await expect(this.page.locator('tbody')).toContainText(noDataText);
+  }
+
+  /** Verifies the "some entities not reporting" icon tooltip on the drill-down card. */
+  async verifySomeEntitiesNotReportingTooltip() {
+    const icon = this.page.getByTestId('ReportProblemOutlinedIcon');
+    await expect(icon).toBeVisible();
+    await icon.hover();
+    const tooltipText = getSomeEntitiesNotReportingTooltip(this.translations);
+    await expect(this.page.getByRole('tooltip')).toContainText(tooltipText);
   }
 
   async expectTableHeadersVisible() {
