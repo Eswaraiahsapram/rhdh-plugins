@@ -97,6 +97,11 @@ export function evaluateMessage(message: string, value: string) {
   );
 }
 
+/**
+ * Fallbacks in the helpers below are defensive (used only if a key is missing
+ * from the transformed locale object, e.g. unknown locale). All fallbacks use
+ * scorecardMessages (ref) as the single source of truth so they never drift.
+ */
 export function getEntityCount(
   translations: ScorecardMessages,
   locale: string,
@@ -105,15 +110,18 @@ export function getEntityCount(
   const useSingular =
     count === '1' || (locale.startsWith('fr') && count === '0');
   const key = useSingular
-    ? translations.thresholds.entities_one ?? '{{count}} entity'
-    : translations.thresholds.entities_other ?? '{{count}} entities';
+    ? translations.thresholds.entities_one ??
+      scorecardMessages.thresholds.entities_one
+    : translations.thresholds.entities_other ??
+      scorecardMessages.thresholds.entities_other;
   return evaluateMessage(key, count);
 }
 
 /** Returns the translated label for "entities" (e.g. "entities", "entités", "Elemente"). */
 export function getEntitiesLabel(translations: ScorecardMessages): string {
   const template =
-    translations.thresholds.entities_other ?? '{{count}} entities';
+    translations.thresholds.entities_other ??
+    scorecardMessages.thresholds.entities_other;
   return template.replace(/\{\{count\}\}\s*/, '').trim();
 }
 
@@ -123,7 +131,7 @@ export function getEntitiesPageNoDataFound(
 ): string {
   return (
     (translations as { entitiesPage?: { noDataFound?: string } }).entitiesPage
-      ?.noDataFound ?? 'No data found'
+      ?.noDataFound ?? scorecardMessages.entitiesPage.noDataFound
   );
 }
 
@@ -134,7 +142,7 @@ export function getEntitiesPageMissingPermission(
   return (
     (translations as { entitiesPage?: { missingPermission?: string } })
       .entitiesPage?.missingPermission ??
-    'To view the scorecard metrics, your administrator must grant you the required permission.'
+    scorecardMessages.entitiesPage.missingPermission
   );
 }
 
@@ -147,7 +155,7 @@ export function getSomeEntitiesNotReportingTooltip(
   ).metric;
   return (
     metric?.someEntitiesNotReportingValues ??
-    'Some entities are not reporting values related to this metric.'
+    scorecardMessages.metric.someEntitiesNotReportingValues
   );
 }
 
@@ -158,13 +166,14 @@ export function getEntitiesTableHeaderLabels(translations: ScorecardMessages) {
       entitiesPage?: { entitiesTable?: { header?: Record<string, string> } };
     }
   ).entitiesPage?.entitiesTable?.header;
+  const h = scorecardMessages.entitiesPage.entitiesTable.header;
   return {
-    metric: header?.metric ?? 'Metric',
-    value: header?.value ?? 'Value',
-    entity: header?.entity ?? 'Entity',
-    owner: header?.owner ?? 'Owner',
-    kind: header?.kind ?? 'Kind',
-    lastUpdated: header?.lastUpdated ?? 'Last updated',
+    metric: header?.metric ?? h.metric,
+    value: header?.value ?? h.value,
+    entity: header?.entity ?? h.entity,
+    owner: header?.owner ?? h.owner,
+    kind: header?.kind ?? h.kind,
+    lastUpdated: header?.lastUpdated ?? h.lastUpdated,
   };
 }
 
@@ -174,7 +183,7 @@ export function getLastUpdatedLabel(
 ) {
   const template =
     (translations.metric as { lastUpdated?: string }).lastUpdated ??
-    'Last updated: {{timestamp}}';
+    scorecardMessages.metric.lastUpdated;
   return evaluateMessage(template, formattedTimestamp);
 }
 
