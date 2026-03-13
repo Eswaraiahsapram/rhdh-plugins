@@ -18,6 +18,10 @@ import { Locator, Page, expect } from '@playwright/test';
 import {
   ScorecardMessages,
   getDrillDownCardSnapshot,
+  getDrillDownMissingPermissionSnapshot,
+  getDrillDownNoDataFoundSnapshot,
+  getEntitiesPageMissingPermission,
+  getEntitiesPageNoDataFound,
   getEntitiesTableHeaderLabels,
   getMetricTitleEn,
 } from '../utils/translationUtils';
@@ -52,6 +56,7 @@ export class ScorecardDrillDownPage {
     ).toBeVisible();
   }
 
+  /** Inner article (the scorecard card); on drill-down page the card is nested inside a wrapper article. */
   getDrillDownCard(metricId: MetricId): Locator {
     const translatedTitle = this.translations.metric[metricId].title;
     const enTitle = getMetricTitleEn(metricId);
@@ -71,6 +76,34 @@ export class ScorecardDrillDownPage {
     await expect(card).toMatchAriaSnapshot(
       getDrillDownCardSnapshot(this.translations, metricId),
     );
+  }
+
+  async expectCardHasMissingPermission(metricId: MetricId) {
+    const card = this.getDrillDownCard(metricId);
+    await expect(card).toContainText(
+      this.translations.errors.missingPermission,
+    );
+    await expect(card).toMatchAriaSnapshot(
+      getDrillDownMissingPermissionSnapshot(this.translations, metricId),
+    );
+  }
+
+  async expectTableHasMissingPermission() {
+    const msg = getEntitiesPageMissingPermission(this.translations);
+    await expect(this.page.locator('tbody')).toContainText(msg);
+  }
+
+  async expectCardHasNoDataFound(metricId: MetricId) {
+    const card = this.getDrillDownCard(metricId);
+    await expect(card).toContainText(this.translations.errors.noDataFound);
+    await expect(card).toMatchAriaSnapshot(
+      getDrillDownNoDataFoundSnapshot(this.translations, metricId),
+    );
+  }
+
+  async expectTableNoDataFound() {
+    const noDataText = getEntitiesPageNoDataFound(this.translations);
+    await expect(this.page.locator('tbody')).toContainText(noDataText);
   }
 
   async expectTableHeadersVisible() {

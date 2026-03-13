@@ -76,8 +76,105 @@ export async function mockAggregatedScorecardResponse(
   });
 }
 
+/** Mocks only the GitHub aggregations API (for tests that only load the GitHub card/drill-down). */
+export async function mockGitHubAggregationResponse(
+  page: Page,
+  githubResponse: object,
+  status = 200,
+) {
+  await page.route(GITHUB_AGGREGATION_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(githubResponse),
+    });
+  });
+}
+
+/** Mocks only the Jira aggregations API (for tests that only load the Jira drill-down page). */
+export async function mockJiraAggregationResponse(
+  page: Page,
+  jiraResponse: object,
+  status = 200,
+) {
+  await page.route(JIRA_AGGREGATION_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(jiraResponse),
+    });
+  });
+}
+
 const entitiesDrillDownPattern = (metricId: string) =>
   `**/api/scorecard/metrics/${metricId}/catalog/aggregations/entities*`;
+
+/** Dummy 403 body for permission-denied responses (no sensitive paths). */
+const notAllowedError403Body = (requestUrl: string) =>
+  JSON.stringify({
+    error: {
+      name: 'NotAllowedError',
+      message: '',
+      stack: 'NotAllowedError\n    at authorizeConditional (router.ts:92:13)',
+    },
+    request: { method: 'GET', url: requestUrl },
+    response: { statusCode: 403 },
+  });
+
+const METRICS_API_PATTERN = '**/api/scorecard/metrics*';
+
+/**
+ * Mocks GET /api/scorecard/metrics?metricIds={metricId} to return metric metadata (e.g. for drill-down page).
+ */
+export async function mockMetricsApi(
+  page: Page,
+  responseData: { metrics: object[] },
+) {
+  await page.route(METRICS_API_PATTERN, async route => {
+    const url = route.request().url();
+    if (!url.includes('metricIds=')) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(responseData),
+    });
+  });
+}
+
+/**
+ * Mocks Jira drill-down "missing permission" scenario: metrics API 200, aggregations 403, entities 403.
+ * Use with direct navigation to /scorecard/metrics/jira.open_issues.
+ */
+export async function mockJiraDrillDownMissingPermission(
+  page: Page,
+  metricsResponse: { metrics: object[] },
+) {
+  await mockMetricsApi(page, metricsResponse);
+  await page.route(JIRA_AGGREGATION_ROUTE, async route => {
+    await route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: notAllowedError403Body(
+        '/metrics/jira.open_issues/catalog/aggregations',
+      ),
+    });
+  });
+  await page.route(
+    entitiesDrillDownPattern('jira.open_issues'),
+    async route => {
+      await route.fulfill({
+        status: 403,
+        contentType: 'application/json',
+        body: notAllowedError403Body(
+          '/metrics/jira.open_issues/catalog/aggregations/entities?page=1&pageSize=5',
+        ),
+      });
+    },
+  );
+}
 
 /**
  * Mocks the aggregated scorecard entity drill-down API:

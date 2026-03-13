@@ -117,6 +117,27 @@ export function getEntitiesLabel(translations: ScorecardMessages): string {
   return template.replace(/\{\{count\}\}\s*/, '').trim();
 }
 
+/** Entities table "no data" message for the drill-down page (locale-aware). */
+export function getEntitiesPageNoDataFound(
+  translations: ScorecardMessages,
+): string {
+  return (
+    (translations as { entitiesPage?: { noDataFound?: string } }).entitiesPage
+      ?.noDataFound ?? 'No data found'
+  );
+}
+
+/** Entities table "missing permission" message for the drill-down page (locale-aware). */
+export function getEntitiesPageMissingPermission(
+  translations: ScorecardMessages,
+): string {
+  return (
+    (translations as { entitiesPage?: { missingPermission?: string } })
+      .entitiesPage?.missingPermission ??
+    'To view the scorecard metrics, your administrator must grant you the required permission.'
+  );
+}
+
 /** Entities table column header labels for the drill-down page (locale-aware). */
 export function getEntitiesTableHeaderLabels(translations: ScorecardMessages) {
   const header = (
@@ -156,6 +177,36 @@ export function getMissingPermissionSnapshot(
           - paragraph: ${translations.metric[metricId].description}
           - text: "--"
           - application: ${translations.errors.missingPermission}
+        `;
+}
+
+/** Snapshot for the scorecard card on the drill-down page when permission is missing (no entity count in UI). */
+export function getDrillDownMissingPermissionSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - text: "--"
+          - application: ${translations.errors.missingPermission}
+        `;
+}
+
+/** Snapshot for the scorecard card on the drill-down page when there is no data (no entity count in UI). */
+export function getDrillDownNoDataFoundSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - text: "--"
+          - application: ${translations.errors.noDataFound}
         `;
 }
 

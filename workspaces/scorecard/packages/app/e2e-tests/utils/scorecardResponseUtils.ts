@@ -180,6 +180,20 @@ export const invalidThresholdResponse = [
 ];
 
 // Aggregated scorecard responses (10 GitHub entities, 10 Jira entities)
+/** Response for GET /api/scorecard/metrics?metricIds=jira.open_issues (metric metadata only). */
+export const jiraMetricMetadataResponse = {
+  metrics: [
+    {
+      id: 'jira.open_issues',
+      title: 'Jira open blocking tickets',
+      description:
+        'Highlights the number of issues that are currently open in Jira.',
+      type: 'number',
+      history: true,
+    },
+  ],
+};
+
 export const githubAggregatedResponse = {
   id: 'github.open_prs',
   status: 'success',
@@ -444,6 +458,25 @@ export const jiraEntitiesDrillDownResponse = {
     pageSize: 10,
     total: 4,
     totalPages: 1,
+    isCapped: false,
+  },
+};
+
+/** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
+export const jiraEntitiesDrillDownNoDataResponse = {
+  metricId: 'jira.open_issues',
+  metricMetadata: {
+    title: 'Jira open blocking tickets',
+    description:
+      'Highlights the number of issues that are currently open in Jira.',
+    type: 'number',
+  },
+  entities: [],
+  pagination: {
+    page: 1,
+    pageSize: 5,
+    total: 0,
+    totalPages: 0,
     isCapped: false,
   },
 };
