@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+// Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
+const DEFAULT_NUMBER_THRESHOLDS = {
+  rules: [
+    { key: 'success', expression: '<10' },
+    { key: 'warning', expression: '10-50' },
+    { key: 'error', expression: '>50' },
+  ],
+};
 
 export const customScorecardResponse = [
   {
