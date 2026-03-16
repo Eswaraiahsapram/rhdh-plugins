@@ -159,6 +159,89 @@ export function getSomeEntitiesNotReportingTooltip(
   );
 }
 
+/** Rows-per-page label (e.g. "5 rows", "5 lignes"). Used for dropdown and listbox options. */
+export function getEntitiesTableFooterRowsLabel(
+  translations: ScorecardMessages,
+  count: number,
+): string {
+  const footer = (
+    translations as {
+      entitiesPage?: {
+        entitiesTableFooter?: { rows_one?: string; rows_other?: string };
+      };
+    }
+  ).entitiesPage?.entitiesTableFooter;
+  const template =
+    count === 1
+      ? footer?.rows_one ??
+        scorecardMessages.entitiesPage.entitiesTableFooter.rows_one
+      : footer?.rows_other ??
+        scorecardMessages.entitiesPage.entitiesTableFooter.rows_other;
+  return template.replace(/\{\{count\}\}/g, String(count));
+}
+
+/**
+ * Locale-aware table footer aria snapshot. Pass start/end/total for range text;
+ * disabled: 'first' | 'last' | 'only' | 'none' controls which pagination buttons are [disabled].
+ */
+export function getTableFooterSnapshot(
+  translations: ScorecardMessages,
+  params: {
+    start: number;
+    end: number;
+    total: number;
+    rowsLabel?: string;
+    disabled: 'first' | 'last' | 'only' | 'none';
+  },
+): string {
+  const footer = (
+    translations as {
+      entitiesPage?: { entitiesTableFooter?: { of?: string } };
+    }
+  ).entitiesPage?.entitiesTableFooter;
+  const of =
+    footer?.of ?? scorecardMessages.entitiesPage.entitiesTableFooter.of;
+  const rangeText = `${params.start}-${params.end} ${of} ${params.total}`;
+  const { rowsLabel, disabled: d } = params;
+  let first = '';
+  let prev = '';
+  let next = '';
+  let last = '';
+  if (d === 'only') {
+    first = prev = next = last = ' [disabled]';
+  } else if (d === 'first') {
+    first = prev = ' [disabled]';
+  } else if (d === 'last') {
+    next = last = ' [disabled]';
+  }
+  const rowParts = [
+    'first page',
+    'previous page',
+    rangeText,
+    'next page',
+    'last page',
+  ];
+  if (rowsLabel) rowParts.unshift(rowsLabel);
+  const rowName = rowParts.join(' ');
+  const cellContent: string[] = [];
+  if (rowsLabel) {
+    cellContent.push('- paragraph', `- combobox "${rowsLabel}"`);
+  }
+  cellContent.push(
+    `- button "first page"${first}`,
+    `- button "previous page"${prev}`,
+    `- text: ${rangeText}`,
+    `- button "next page"${next}`,
+    `- button "last page"${last}`,
+  );
+  return `
+- rowgroup:
+  - row "${rowName}":
+    - cell "${rowName}":
+${cellContent.map(l => `      ${l}`).join('\n')}
+`;
+}
+
 /** Entities table column header labels for the drill-down page (locale-aware). */
 export function getEntitiesTableHeaderLabels(translations: ScorecardMessages) {
   const header = (

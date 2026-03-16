@@ -72,6 +72,36 @@ export class ScorecardDrillDownPage {
     return this.page.getByRole('table');
   }
 
+  getTableFooter(): Locator {
+    return this.page.locator('tfoot');
+  }
+
+  async clickNextPage(): Promise<void> {
+    await this.page.getByRole('button', { name: 'next page' }).click();
+  }
+
+  async clickPreviousPage(): Promise<void> {
+    await this.page.getByRole('button', { name: 'previous page' }).click();
+  }
+
+  async expectTableFooterSnapshot(snapshot: string): Promise<void> {
+    await expect(this.getTableFooter()).toMatchAriaSnapshot(snapshot);
+  }
+
+  /** Opens the rows-per-page dropdown; pass translated label (e.g. "5 rows", "5 lignes") when testing in non-English locale. */
+  async openRowsPerPageDropdown(selectedRowsLabel?: string): Promise<void> {
+    const name = selectedRowsLabel ?? 'rows';
+    await this.page.getByRole('combobox', { name }).click();
+  }
+
+  async expectRowsPerPageListboxSnapshot(snapshot: string): Promise<void> {
+    await expect(this.page.getByRole('listbox')).toMatchAriaSnapshot(snapshot);
+  }
+
+  async closeRowsPerPageDropdown(): Promise<void> {
+    await this.page.keyboard.press('Escape');
+  }
+
   async expectDrillDownCardSnapshot(metricId: MetricId) {
     const card = this.getDrillDownCard(metricId);
     await expect(card).toMatchAriaSnapshot(

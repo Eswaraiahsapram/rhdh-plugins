@@ -199,6 +199,9 @@ const STATUS_ORDER_ASC = ['error', 'success', 'warning'];
 
 interface EntitiesDrillDownPayload {
   entities?: Array<{ status?: string }>;
+  metricId?: string;
+  metricMetadata?: object;
+  pagination?: object;
   [key: string]: unknown;
 }
 
@@ -218,8 +221,10 @@ function sortEntitiesByStatus(
 }
 
 /**
- * Mocks the entities drill-down API and returns entities sorted by status when
- * sortBy=status and sortOrder are present in the request URL (so sort clicks are reflected in table data).
+ * Mocks the entities drill-down API:
+ * - Reads page and pageSize from the request URL (defaults: page=1, pageSize=5)
+ * - Sorts entities by status when sortBy=status and sortOrder are present
+ * - Returns a slice of the existing response entities for the requested page
  */
 export async function mockScorecardEntitiesDrillDownWithSort(
   page: Page,
@@ -229,17 +234,42 @@ export async function mockScorecardEntitiesDrillDownWithSort(
 ) {
   await page.route(entitiesDrillDownPattern(metricId), async route => {
     const url = new URL(route.request().url());
+    const requestedPage = Math.max(
+      1,
+      parseInt(url.searchParams.get('page') ?? '1', 10),
+    );
+    const requestedPageSize = Math.max(
+      1,
+      parseInt(url.searchParams.get('pageSize') ?? '5', 10),
+    );
     const sortBy = url.searchParams.get('sortBy');
     const sortOrder = (url.searchParams.get('sortOrder') ?? 'asc') as
       | 'asc'
       | 'desc';
-    const data =
-      sortBy === 'status'
-        ? sortEntitiesByStatus(
-            responseData as EntitiesDrillDownPayload,
-            sortOrder,
-          )
-        : responseData;
+
+    let payload = responseData as EntitiesDrillDownPayload;
+    if (sortBy === 'status') {
+      payload = sortEntitiesByStatus(payload, sortOrder);
+    }
+    const entities = payload.entities ? [...payload.entities] : [];
+
+    const total = entities.length;
+    const start = (requestedPage - 1) * requestedPageSize;
+    const slicedEntities = entities.slice(start, start + requestedPageSize);
+    const totalPages = Math.ceil(total / requestedPageSize) || 1;
+
+    const data: EntitiesDrillDownPayload = {
+      ...payload,
+      entities: slicedEntities,
+      pagination: {
+        page: requestedPage,
+        pageSize: requestedPageSize,
+        total,
+        totalPages,
+        isCapped: false,
+      },
+    };
+
     await route.fulfill({
       status,
       contentType: 'application/json',

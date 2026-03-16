@@ -50,6 +50,8 @@ import {
   getEntityCount,
   getMissingPermissionSnapshot,
   getThresholdsSnapshot,
+  getTableFooterSnapshot,
+  getEntitiesTableFooterRowsLabel,
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
 
@@ -343,18 +345,50 @@ test.describe('Scorecard Plugin Tests', () => {
         );
         await scorecardDrillDownPage.verifySomeEntitiesNotReportingTooltip();
         await scorecardDrillDownPage.expectTableHeadersVisible();
+        const rows5Label = getEntitiesTableFooterRowsLabel(translations, 5);
+        await scorecardDrillDownPage.expectTableFooterSnapshot(
+          getTableFooterSnapshot(translations, {
+            start: 1,
+            end: 5,
+            total: 10,
+            rowsLabel: rows5Label,
+            disabled: 'first',
+          }),
+        );
+        await scorecardDrillDownPage.openRowsPerPageDropdown(rows5Label);
+        await scorecardDrillDownPage.expectRowsPerPageListboxSnapshot(`
+          - listbox:
+            - option "${rows5Label}" [selected]
+            - option "${getEntitiesTableFooterRowsLabel(translations, 10)}"
+          `);
+        await scorecardDrillDownPage.closeRowsPerPageDropdown();
+        // First page: only 5 entities (pageSize=5)
         await scorecardDrillDownPage.expectEntityNamesVisible([
           'all-scorecards-service',
           'Red Hat Developer Hub',
           'github-scorecard-only-service',
           'all-scorecards-service-different-owner',
           'backend-api',
+        ]);
+        // Next page: remaining 5 entities
+        await scorecardDrillDownPage.clickNextPage();
+        await scorecardDrillDownPage.expectEntityNamesVisible([
           'frontend-app',
           'auth-service',
           'notifications-service',
           'search-indexer',
           'payment-gateway',
         ]);
+        await scorecardDrillDownPage.expectTableFooterSnapshot(
+          getTableFooterSnapshot(translations, {
+            start: 6,
+            end: 10,
+            total: 10,
+            rowsLabel: rows5Label,
+            disabled: 'last',
+          }),
+        );
+        await scorecardDrillDownPage.clickPreviousPage();
       });
 
       await test.step('Verify metric column sort', async () => {
@@ -400,6 +434,14 @@ test.describe('Scorecard Plugin Tests', () => {
           'frontend-svc',
           'auth-svc',
         ]);
+        await scorecardDrillDownPage.expectTableFooterSnapshot(
+          getTableFooterSnapshot(translations, {
+            start: 1,
+            end: 4,
+            total: 4,
+            disabled: 'only',
+          }),
+        );
       });
 
       await test.step('Verify metric column sort', async () => {
